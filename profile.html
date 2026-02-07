@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>User Profile</title>
+  </head>
+  <style>
+    /* Reset default browser styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    /* Page background */
+    body {
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+      padding: 40px;
+    }
+
+    /* Main container */
+    .container {
+      background: #fff;
+      width: 500px;
+      padding: 25px;
+      border-radius: 12px;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+      
+     
+    }
+
+    /* Title */
+    .container h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+      margin-bottom:40px;
+    }
+    #profile-info {
+
+  padding: 20px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 15px;
+}
+#logout-btn {
+        padding: 12px;
+        background:#007bff;
+        color: #fff;
+        font-weight: bold;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.3s;
+            display: block;
+        margin: 20px auto;
+    
+        
+      
+       
+
+      }
+
+      #logout-btn:hover {
+        background:#007bff;
+      }
+        #updateinfo {
+      padding: 10px;
+      background: #007bff;
+      color: #fff;
+      font-weight: bold;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.3s;
+     float:right;
+     position:relative;
+     top: -40px;
+     
+
+
+     
+    }
+    a {
+       text-decoration: none;
+    }
+
+    #updateinfo:hover {
+      background: #0056b3;
+    }
+  </style>
+  <body>
+    <div class="container">
+      <h1>User Profile</h1>
+      <a href="updateinfo.html"> <button id="updateinfo" >Update</button></a>
+      
+        <div id="profile-info"></div>
+       
+      <div>
+        
+
+
+  </body>
+  <script src="profile.js"></script>
+</html>
