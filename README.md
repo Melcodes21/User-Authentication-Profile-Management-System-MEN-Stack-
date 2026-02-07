@@ -1,0 +1,2 @@
+# User-Authentication-Profile-Management-System-MEN-Stack-
+A web-based user authentication system built using the MEN stack (MongoDB, Express.js, Node.js) with a simple HTML/CSS/JavaScript frontend. The system allows users to register, log in, and securely access their personal profile, where they can view their stored information. Authentication is handled using JWT, and passwords are securely hashed.
