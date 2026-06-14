@@ -6,7 +6,16 @@ let age = document.getElementById("age");
 let bio = document.getElementById("bio");
 
 document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  let user;
+  try {
+    user = JSON.parse(localStorage.getItem("user"));
+  } catch (err) {
+    console.error("Failed to parse user data:", err.message);
+    localStorage.removeItem("user");
+    localStorage.removeItem("authToken");
+    window.location.href = "login.html";
+    return;
+  }
 
   //  If not logged in, redirect to login
   if (!user) {

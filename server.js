@@ -13,12 +13,12 @@ app.use(express.static("public"))
 //connect database
 mongoose
   .connect(process.env.DB_URI)
-
   .then(() => {
     console.log("Database connected successfully");
   })
   .catch((err) => {
-    console.log(err);
+    console.error("Database connection failed:", err.message);
+    process.exit(1);
   });
 
 //route
@@ -28,6 +28,12 @@ app.use("/api/users", authRoutes);
 // Default route
 app.get("/", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
+});
+
+// Global error handler
+app.use((err, req, res, next) => {
+  console.error("Unhandled error:", err.message);
+  res.status(500).json({ message: "Internal server error" });
 });
 
 //start port
