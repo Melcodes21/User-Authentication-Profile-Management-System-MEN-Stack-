@@ -1,21 +1,7 @@
-const updateinfo = document.getElementById("updateinfo");
-let username = document.getElementById("username");
-let email = document.getElementById("email");
-let password = document.getElementById("password");
-let age = document.getElementById("age");
-let bio = document.getElementById("bio");
-
 document.addEventListener("DOMContentLoaded", () => {
-  const user = JSON.parse(localStorage.getItem("user"));
+  const user = requireAuth();
+  if (!user) return;
 
-  //  If not logged in, redirect to login
-  if (!user) {
-    window.location.href = "login.html";
-    return;
-  }
-  
-
-  //  If logged in, show profile
   document.getElementById("profile-info").innerHTML = `
   <img src="https://ui-avatars.com/api/?name=${
     user.username
@@ -29,10 +15,9 @@ document.addEventListener("DOMContentLoaded", () => {
      <button id="logout-btn" class"groupbtn">Logout</button>
       
   `;
+
   document.getElementById("logout-btn").addEventListener("click", () => {
-    localStorage.removeItem("user");
-    localStorage.removeItem("authToken");
+    clearAuth();
     window.location.href = "login.html";
   });
-  
 });

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Register</title>
-    <link rel="stylesheet" href="style.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <style>
       * {
         margin: 0;
@@ -120,7 +120,7 @@
         border-color: #007bff;
       }
       .show-pass input[type="checkbox"]:checked::after {
-        content: "✓";
+        content: "\2713";
         color: #fff;
         font-size: 14px;
         position: absolute;
@@ -184,12 +184,6 @@
       </div>
     </div>
   </body>
-  <script src="register.js"></script>
-  <script>
-    function togglePassword() {
-      const pw = document.getElementById("password");
-      pw.type = pw.type === "password" ? "text" : "password";
-    }
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script src="js/helpers.js"></script>
+  <script src="js/register.js"></script>
 </html>
