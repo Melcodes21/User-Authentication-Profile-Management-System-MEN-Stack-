@@ -45,7 +45,7 @@ const postUser = async (req, res) => {
     res.status(201).json({ message: "user created successfully", saveUser });
   } catch (err) {
     console.log(err);
-    res.status(500).json({ error: err });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -84,27 +84,25 @@ const Userlogin = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({
-      message: "something went wrong on the Server",
-      error: err.message,
-    });
+    console.error(err);
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 const profile = async (req, res) => {
   try {
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user._id).select("-password");
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({ user }); // always return user object
+    res.json({ user });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
 //get all user
 const getUsers = async (req, res) => {
-  const users = await User.find();
+  const users = await User.find().select("-password");
   if (!users) return res.status(404).send("user not found");
   res.status(200).send(users);
 };
@@ -113,7 +111,7 @@ const getUsers = async (req, res) => {
 const getUser = async (req, res) => {
   const { id } = req.params;
   if (!id) return res.status(400).send("user id required");
-  const userId = await User.findById(id);
+  const userId = await User.findById(id).select("-password");
   if (!userId) return res.status(404).send("user not found or wrong id");
   res.status(200).send(userId);
 };
@@ -123,9 +121,11 @@ const getUserByName = async (req, res) => {
   const { username } = req.params;
   if (!username) return res.status(400).send("username is required");
 
+  // Escape special regex characters to prevent ReDoS / regex injection
+  const escapedUsername = username.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const user = await User.findOne({
-    username: { $regex: req.params.username, $options: "i" },
-  });
+    username: { $regex: `^${escapedUsername}$`, $options: "i" },
+  }).select("-password");
 
   if (!user) return res.status(404).send("user not found or wrong username");
   res.status(200).send(user);
@@ -151,7 +151,7 @@ const putUser = async (req, res) => {
   }
   const updatedUser = await User.findByIdAndUpdate(id, updateData, {
     new: true,
-  });
+  }).select("-password");
   if (!updatedUser) return res.status(404).send("user not found");
   res.status(200).send(updatedUser);
 };
@@ -161,6 +161,9 @@ const putUserByName = async (req, res) => {
   const { username } = req.params;
 
   if (!username) return res.status(400).send("username required");
+
+  const { error } = updateValidation(req.body);
+  if (error) return res.status(400).send(error.details[0].message);
 
   const { newUsername, email, password, age, bio } = req.body;
   const updateData = {};

@@ -23,10 +23,11 @@ const loginValidation = (data) => {
 const updateValidation = (data) => {
   const schema = Joi.object({
     username: Joi.string().min(3).max(255),
+    newUsername: Joi.string().min(3).max(255),
     email: Joi.string().email().optional(),
     password: Joi.string().min(6).max(1024),
-    age: Joi.number(),
-    bio: Joi.string().max(1024).optional(),
+    age: Joi.number().allow(null, "").optional(),
+    bio: Joi.string().max(1024).allow("").optional(),
   });
   return schema.validate(data);
 };
