@@ -1,38 +1,55 @@
-const updateinfo = document.getElementById("updateinfo");
-let username = document.getElementById("username");
-let email = document.getElementById("email");
-let password = document.getElementById("password");
-let age = document.getElementById("age");
-let bio = document.getElementById("bio");
-
 document.addEventListener("DOMContentLoaded", () => {
   const user = JSON.parse(localStorage.getItem("user"));
 
-  //  If not logged in, redirect to login
+  // If not logged in, redirect to login
   if (!user) {
     window.location.href = "login.html";
     return;
   }
-  
 
-  //  If logged in, show profile
-  document.getElementById("profile-info").innerHTML = `
-  <img src="https://ui-avatars.com/api/?name=${
-    user.username
-  }&background=007bff&color=fff" 
-         alt="User Avatar" class="avatar" />
-   
-    <p><strong>Username:</strong> ${user.username}</p>
-    <p><strong>Email:</strong> ${user.email}</p>
-    ${user.age ? `<p><strong>Age:</strong> ${user.age}</p>` : ""}
-    ${user.bio ? `<p><strong>Bio:</strong> ${user.bio}</p>` : ""}
-     <button id="logout-btn" class"groupbtn">Logout</button>
-      
-  `;
-  document.getElementById("logout-btn").addEventListener("click", () => {
+  // Use safe DOM manipulation instead of innerHTML to prevent XSS
+  const profileInfo = document.getElementById("profile-info");
+  profileInfo.textContent = "";
+
+  const avatar = document.createElement("img");
+  avatar.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.username)}&background=007bff&color=fff`;
+  avatar.alt = "User Avatar";
+  avatar.className = "avatar";
+  profileInfo.appendChild(avatar);
+
+  const usernameP = document.createElement("p");
+  usernameP.innerHTML = "<strong>Username:</strong> ";
+  usernameP.appendChild(document.createTextNode(user.username));
+  profileInfo.appendChild(usernameP);
+
+  const emailP = document.createElement("p");
+  emailP.innerHTML = "<strong>Email:</strong> ";
+  emailP.appendChild(document.createTextNode(user.email));
+  profileInfo.appendChild(emailP);
+
+  if (user.age) {
+    const ageP = document.createElement("p");
+    ageP.innerHTML = "<strong>Age:</strong> ";
+    ageP.appendChild(document.createTextNode(user.age));
+    profileInfo.appendChild(ageP);
+  }
+
+  if (user.bio) {
+    const bioP = document.createElement("p");
+    bioP.innerHTML = "<strong>Bio:</strong> ";
+    bioP.appendChild(document.createTextNode(user.bio));
+    profileInfo.appendChild(bioP);
+  }
+
+  const logoutBtn = document.createElement("button");
+  logoutBtn.id = "logout-btn";
+  logoutBtn.className = "groupbtn";
+  logoutBtn.textContent = "Logout";
+  profileInfo.appendChild(logoutBtn);
+
+  logoutBtn.addEventListener("click", () => {
     localStorage.removeItem("user");
     localStorage.removeItem("authToken");
     window.location.href = "login.html";
   });
-  
 });
