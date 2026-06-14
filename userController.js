@@ -9,19 +9,19 @@ const {
 
 //post user
 const postUser = async (req, res) => {
-  const { error } = registerValidation(req.body);
-  if (error) {
-    console.log("Validation Error:", error.details);
-    return res.status(400).send(error.details[0].message);
-  }
-  const { username, email, password, age, bio } = req.body;
-  if (!username || !email || !password)
-    return res.status(400).send("username,email , password are required");
-  //check if username exist
-  const userExist = await User.findOne({ username });
-  if (userExist) return res.status(400).send("Username already exist");
-  //check if emailexist
   try {
+    const { error } = registerValidation(req.body);
+    if (error) {
+      console.log("Validation Error:", error.details);
+      return res.status(400).send(error.details[0].message);
+    }
+    const { username, email, password, age, bio } = req.body;
+    if (!username || !email || !password)
+      return res.status(400).send("username,email , password are required");
+    //check if username exist
+    const userExist = await User.findOne({ username });
+    if (userExist) return res.status(400).send("Username already exist");
+    //check if email exist
     const emailExist = await User.findOne({ email });
     if (emailExist) return res.status(400).send("Email already exist");
     //check if password is the right length
@@ -44,8 +44,8 @@ const postUser = async (req, res) => {
     const saveUser = await newUser.save();
     res.status(201).json({ message: "user created successfully", saveUser });
   } catch (err) {
-    console.log(err);
-    res.status(500).json({ error: err });
+    console.error("Registration error:", err.message);
+    res.status(500).json({ message: "Server error during registration" });
   }
 };
 
@@ -84,10 +84,8 @@ const Userlogin = async (req, res) => {
       },
     });
   } catch (err) {
-    res.status(500).json({
-      message: "something went wrong on the Server",
-      error: err.message,
-    });
+    console.error("Login error:", err.message);
+    res.status(500).json({ message: "Server error during login" });
   }
 };
 
@@ -96,129 +94,165 @@ const profile = async (req, res) => {
     const user = await User.findById(req.user._id);
     if (!user) return res.status(404).json({ message: "User not found" });
 
-    res.json({ user }); // always return user object
+    res.json({ user });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    console.error("Profile error:", err.message);
+    res.status(500).json({ message: "Server error fetching profile" });
   }
 };
 
 //get all user
 const getUsers = async (req, res) => {
-  const users = await User.find();
-  if (!users) return res.status(404).send("user not found");
-  res.status(200).send(users);
+  try {
+    const users = await User.find();
+    if (!users) return res.status(404).send("user not found");
+    res.status(200).send(users);
+  } catch (err) {
+    console.error("Get users error:", err.message);
+    res.status(500).json({ message: "Server error fetching users" });
+  }
 };
 
 //get user byID
 const getUser = async (req, res) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).send("user id required");
-  const userId = await User.findById(id);
-  if (!userId) return res.status(404).send("user not found or wrong id");
-  res.status(200).send(userId);
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).send("user id required");
+    const userId = await User.findById(id);
+    if (!userId) return res.status(404).send("user not found or wrong id");
+    res.status(200).send(userId);
+  } catch (err) {
+    console.error("Get user error:", err.message);
+    res.status(500).json({ message: "Server error fetching user" });
+  }
 };
 
 //get user by user name
 const getUserByName = async (req, res) => {
-  const { username } = req.params;
-  if (!username) return res.status(400).send("username is required");
+  try {
+    const { username } = req.params;
+    if (!username) return res.status(400).send("username is required");
 
-  const user = await User.findOne({
-    username: { $regex: req.params.username, $options: "i" },
-  });
+    const user = await User.findOne({
+      username: { $regex: req.params.username, $options: "i" },
+    });
 
-  if (!user) return res.status(404).send("user not found or wrong username");
-  res.status(200).send(user);
+    if (!user) return res.status(404).send("user not found or wrong username");
+    res.status(200).send(user);
+  } catch (err) {
+    console.error("Get user by name error:", err.message);
+    res.status(500).json({ message: "Server error fetching user" });
+  }
 };
 
 //update user info
 
 const putUser = async (req, res) => {
-  const { id } = req.params;
-  const { username, email, password, age, bio } = req.body;
-  if (!id) return res.status("user id required");
+  try {
+    const { id } = req.params;
+    const { username, email, password, age, bio } = req.body;
+    if (!id) return res.status(400).send("user id required");
 
-  const { error } = updateValidation(req.body);
-  if (error) return res.status(400).send(error.details[0].message);
-  const updateData = {};
-  if (username) updateData.username = username;
-  if (email) updateData.email = email;
-  if (age) updateData.age = age;
-  if (bio) updateData.bio = bio;
-  if (password) {
-    const salt = await bcrypt.genSalt(10);
-    updateData.password = await bcrypt.hash(password, salt);
+    const { error } = updateValidation(req.body);
+    if (error) return res.status(400).send(error.details[0].message);
+    const updateData = {};
+    if (username) updateData.username = username;
+    if (email) updateData.email = email;
+    if (age) updateData.age = age;
+    if (bio) updateData.bio = bio;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+    const updatedUser = await User.findByIdAndUpdate(id, updateData, {
+      new: true,
+    });
+    if (!updatedUser) return res.status(404).send("user not found");
+    res.status(200).send(updatedUser);
+  } catch (err) {
+    console.error("Update user error:", err.message);
+    res.status(500).json({ message: "Server error updating user" });
   }
-  const updatedUser = await User.findByIdAndUpdate(id, updateData, {
-    new: true,
-  });
-  if (!updatedUser) return res.status(404).send("user not found");
-  res.status(200).send(updatedUser);
 };
 
 //update by username
 const putUserByName = async (req, res) => {
-  const { username } = req.params;
+  try {
+    const { username } = req.params;
 
-  if (!username) return res.status(400).send("username required");
+    if (!username) return res.status(400).send("username required");
 
-  const { newUsername, email, password, age, bio } = req.body;
-  const updateData = {};
-  if (newUsername) updateData.username = newUsername;
-  if (email) updateData.email = email;
-  if (age) updateData.age = age;
-  if (bio) updateData.bio = bio;
-  if (password) {
-    const salt = await bcrypt.genSalt(10);
-    updateData.password = await bcrypt.hash(password, salt);
+    const { newUsername, email, password, age, bio } = req.body;
+    const updateData = {};
+    if (newUsername) updateData.username = newUsername;
+    if (email) updateData.email = email;
+    if (age) updateData.age = age;
+    if (bio) updateData.bio = bio;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      updateData.password = await bcrypt.hash(password, salt);
+    }
+
+    const updatedUser = await User.findOneAndUpdate({ username }, updateData, {
+      new: true,
+    });
+    if (!updatedUser) return res.status(404).send("user not found");
+    const token = jwt.sign(
+      {
+        _id: updatedUser._id,
+        email: updatedUser.email,
+        age: updatedUser.age,
+        bio: updatedUser.bio,
+      },
+      process.env.TOKEN_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({
+      token,
+      user: {
+        _id: updatedUser._id,
+        username: updatedUser.username,
+        email: updatedUser.email,
+        age: updatedUser.age,
+        bio: updatedUser.bio,
+      },
+    });
+  } catch (err) {
+    console.error("Update user by name error:", err.message);
+    res.status(500).json({ message: "Server error updating user" });
   }
-
-  const updatedUser = await User.findOneAndUpdate({ username }, updateData, {
-    new: true,
-  });
-  if (!updatedUser) return res.status(404).send("user not found");
-  const token = jwt.sign(
-    {
-      _id: updatedUser._id,
-      email: updatedUser.email,
-      age: updatedUser.age,
-      bio: updatedUser.bio,
-    },
-    process.env.TOKEN_SECRET,
-    { expiresIn: "1h" }
-  );
-
-  res.json({
-    token,
-    user: {
-      _id: updatedUser._id,
-      username: updatedUser.username,
-      email: updatedUser.email,
-      age: updatedUser.age,
-      bio: updatedUser.bio,
-    },
-  });
 };
 
 //delete user info
 
 const deleteUser = async (req, res) => {
-  const { id } = req.params;
-  if (!id) return res.status(400).send("userId is required");
+  try {
+    const { id } = req.params;
+    if (!id) return res.status(400).send("userId is required");
 
-  const deletedUser = await User.findByIdAndDelete(id);
-  if (!deletedUser) return res.status(404).send("user not found");
-  res.status(200).send("user deleted successfully");
+    const deletedUser = await User.findByIdAndDelete(id);
+    if (!deletedUser) return res.status(404).send("user not found");
+    res.status(200).send("user deleted successfully");
+  } catch (err) {
+    console.error("Delete user error:", err.message);
+    res.status(500).json({ message: "Server error deleting user" });
+  }
 };
 
 //delete user by name
 const deleteUserByName = async (req, res) => {
-  const { username } = req.params;
-  if (!username) return res.status(400).send("username required");
+  try {
+    const { username } = req.params;
+    if (!username) return res.status(400).send("username required");
 
-  const deletedUser = await User.findOneAndDelete({ username });
-  if (!deletedUser) return res.status(404).send("user not found");
-  res.status(200).send("user deleted");
+    const deletedUser = await User.findOneAndDelete({ username });
+    if (!deletedUser) return res.status(404).send("user not found");
+    res.status(200).send("user deleted");
+  } catch (err) {
+    console.error("Delete user by name error:", err.message);
+    res.status(500).json({ message: "Server error deleting user" });
+  }
 };
 
 module.exports = {
